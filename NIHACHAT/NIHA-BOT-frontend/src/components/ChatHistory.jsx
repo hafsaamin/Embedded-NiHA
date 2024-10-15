@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-function ChatHistory({ onChatSelect }) {
+function ChatHistory({ onChatSelect, groups }) {
     const [chats, setChats] = useState([]);
     const [openIndex, setOpenIndex] = useState(null);
     const userName = Cookies.get('userName');
@@ -29,8 +29,6 @@ function ChatHistory({ onChatSelect }) {
         return () => clearInterval(intervalId);
     }, []);
 
-
-
     // Function to delete a chat
     const deleteChat = async (chatId) => {
         if (window.confirm('Are you sure you want to delete this chat?')) {
@@ -51,13 +49,20 @@ function ChatHistory({ onChatSelect }) {
                     <p>No chat history available.</p>
                 ) : (
                     <ul className="chatList">
-                        
                         {chats.map((chat, index) => {
                             const userMessage = chat.messages.find(msg => msg.role === 'user')?.content || "No Title";
                             const botResponse = chat.messages.find(msg => msg.role === 'assistant')?.content || "";
 
                             return (
-                                <li key={chat._id} className="list">
+                                <li 
+                                    key={chat._id} 
+                                    className="list" 
+                                    draggable 
+                                    onDragStart={() => {
+                                        console.log('Chat item dragged:', chat._id);
+                                        window.draggedChatId = chat._id; // Store the dragged chat ID
+                                    }}
+                                >
                                     <div className="chat-item">
                                         <span 
                                             className="chat-question" 
