@@ -5,9 +5,10 @@ import { ToggleDarkMode } from '../assets/js/darkmode';
 import ReactMarkdown from 'react-markdown';
 import ChatSideMenu from './ChatSideMenu';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import axios from 'axios';
 const { SpeechRecognition, webkitSpeechRecognition } = window; // Add this line
 
-function ChatMainPage() {
+function ChatMainPage({ selectedGroup }) {
     const [userInput, setUserInput] = useState('');
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -226,6 +227,17 @@ function ChatMainPage() {
             }
         }
     };
+
+    useEffect(() => {
+        if (selectedGroup) {
+            // Fetch messages for the selected group
+            const fetchGroupMessages = async () => {
+                const response = await axios.get(`/api/groups/${selectedGroup._id}/conversations`);
+                setMessages(response.data);
+            };
+            fetchGroupMessages();
+        }
+    }, [selectedGroup]);
 
     return (
         <div className={`chat-mainpage ${darkMode ? 'dark-mode' : ''}`}>
