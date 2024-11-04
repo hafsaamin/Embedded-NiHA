@@ -13,8 +13,9 @@ import speech_recognition as sr  # Add this import for speech recognition
 app = Flask(__name__)
 CORS(app, origins=['http://localhost:3000'])  # Adjust the origin as needed
 
-# Set your OpenAI API key from environment variable
-
+# Set your OpenAI API key
+OPENAI_API_KEY = "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"
+openai.api_key = OPENAI_API_KEY  # Set the API key for OpenAI
 
 # MongoDB connection
 mongo_client = MongoClient("mongodb://localhost:27017/")
@@ -200,10 +201,14 @@ def add_conversation_to_group(group_id):
         return jsonify({'error': 'Conversation ID is required'}), 400
     
     try:
+        # Add the conversation to the group
         db.groups.update_one(
             {'_id': ObjectId(group_id)},
             {'$addToSet': {'conversations': ObjectId(conversation_id)}}
         )
+        # Optionally, remove the conversation from the main conversations collection
+        db.conversations.delete_one({'_id': ObjectId(conversation_id)})
+        
         return jsonify({'message': 'Conversation added to group successfully'}), 200
     except Exception as e:
         logger.error(f"Error adding conversation to group {group_id}: {str(e)}")
@@ -279,6 +284,40 @@ def delete_group(username, group_id):
     except Exception as e:
         logger.error(f"Error deleting group {group_id}: {str(e)}")
         return jsonify({'error': 'Failed to delete group'}), 500
+
+@app.route('/groups/<group_id>/add-chat', methods=['POST'])
+def add_chat_to_group(group_id):
+    try:
+        data = request.json
+        chat_id = data.get('chatId')
+        username = data.get('username')
+
+        if not chat_id:
+            return jsonify({'error': 'Chat ID is required'}), 400
+
+        # Find the chat and verify it belongs to the user
+        chat = conversation_collection.find_one({
+            '_id': ObjectId(chat_id),
+            'username': username
+        })
+
+        if not chat:
+            return jsonify({'error': 'Chat not found or unauthorized'}), 404
+
+        # Add chat to group's conversations array
+        result = db.groups.update_one(
+            {'_id': ObjectId(group_id)},
+            {'$addToSet': {'conversations': ObjectId(chat_id)}}
+        )
+
+        if result.modified_count == 0:
+            return jsonify({'error': 'Group not found or chat already in group'}), 404
+
+        return jsonify({'message': 'Chat added to group successfully'}), 200
+
+    except Exception as e:
+        logger.error(f"Error adding chat to group: {str(e)}")
+        return jsonify({'error': 'Failed to add chat to group'}), 500
 
 if __name__ == '__main__':
     app.run(port=2000, debug=True)

@@ -5,10 +5,9 @@ import { ToggleDarkMode } from '../assets/js/darkmode';
 import ReactMarkdown from 'react-markdown';
 import ChatSideMenu from './ChatSideMenu';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import axios from 'axios';
 const { SpeechRecognition, webkitSpeechRecognition } = window; // Add this line
 
-function ChatMainPage({ selectedGroup }) {
+function ChatMainPage() {
     const [userInput, setUserInput] = useState('');
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -19,6 +18,31 @@ function ChatMainPage({ selectedGroup }) {
     const chatContainerRef = useRef(null);
     const [error, setError] = useState(null);
     const [copiedIndex, setCopiedIndex] = useState(null);
+    
+
+    useEffect(() => {
+        const storedUserName = Cookies.get('userName');
+        if (storedUserName) {
+            setUserName(storedUserName);
+        }
+
+        // Retrieve saved conversation ID and messages from local storage
+        const savedConversationId = localStorage.getItem('currentConversationId');
+        const savedMessages = JSON.parse(localStorage.getItem('messages'));
+
+        if (savedConversationId) {
+            setCurrentConversationId(savedConversationId);
+        }
+        if (savedMessages) {
+            setMessages(savedMessages);
+        }
+    }, []);
+
+    useEffect(() => {
+        // Save the current conversation ID and messages to local storage
+        localStorage.setItem('currentConversationId', currentConversationId);
+        localStorage.setItem('messages', JSON.stringify(messages));
+    }, [currentConversationId, messages]);
 
     const handleInputChange = (e) => {
         setUserInput(e.target.value);
@@ -55,8 +79,7 @@ function ChatMainPage({ selectedGroup }) {
             });
 
             const reader = response.body.getReader();
-
-            const assistantMessageIndex = messages.length;
+            const assistantMessageIndex = messages.length + 1;
             setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: '' }]);
 
             while (true) {
@@ -82,13 +105,12 @@ function ChatMainPage({ selectedGroup }) {
                                     const updatedMessages = [...prevMessages];
                                     updatedMessages[assistantMessageIndex] = {
                                         ...updatedMessages[assistantMessageIndex],
-                                        content: updatedMessages[assistantMessageIndex].content + parsedData.content
+                                        content: updatedMessages[assistantMessageIndex].content + parsedData.content,
                                     };
                                     return updatedMessages;
                                 });
                             } else if (parsedData.conversation_id) {
                                 setCurrentConversationId(parsedData.conversation_id);
-                                console.log("Conversation saved with ID:", parsedData.conversation_id);
                             }
                         } catch (parseError) {
                             console.error("Error parsing JSON:", parseError);
@@ -141,7 +163,6 @@ function ChatMainPage({ selectedGroup }) {
 
     const handleChatSelect = async (selectedConversationId) => {
         try {
-            console.log("Selecting conversation:", selectedConversationId);
             const response = await fetch(`http://localhost:2000/conversation/${selectedConversationId}`);
 
             if (!response.ok) {
@@ -149,10 +170,8 @@ function ChatMainPage({ selectedGroup }) {
             }
 
             const data = await response.json();
-            console.log('Data received:', data);
 
             if (data && data.messages && data.messages.length > 0) {
-                console.log("Fetched conversation:", data);
                 const formattedMessages = data.messages.map(msg => ({
                     role: msg.role,
                     content: msg.content
@@ -161,7 +180,6 @@ function ChatMainPage({ selectedGroup }) {
                 setCurrentConversationId(selectedConversationId);
                 setShowSecondDiv(false);
             } else {
-                console.error("No messages found in the conversation data");
                 setMessages([]);
             }
         } catch (error) {
@@ -181,7 +199,6 @@ function ChatMainPage({ selectedGroup }) {
 
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript; // Get the recognized text
-                console.log('Voice to text conversion:', transcript);
                 setUserInput(transcript); // Set the recognized text to userInput
                 handleSubmit({ preventDefault: () => { } }); // Submit the converted text
             };
@@ -197,7 +214,6 @@ function ChatMainPage({ selectedGroup }) {
             console.log('Speech recognition not supported in this browser.');
         }
     };
-
 
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
@@ -219,7 +235,7 @@ function ChatMainPage({ selectedGroup }) {
                 const data = await response.json();
                 const newImageMessage = {
                     role: 'user',
-                    content: `<img src="${data.url}" alt="Uploaded Image" />`,
+                    content: <img src={data.url} alt="Uploaded Image" />, // Fixed template literal
                 };
                 setMessages((prevMessages) => [...prevMessages, newImageMessage]);
             } catch (error) {
@@ -228,19 +244,8 @@ function ChatMainPage({ selectedGroup }) {
         }
     };
 
-    useEffect(() => {
-        if (selectedGroup) {
-            // Fetch messages for the selected group
-            const fetchGroupMessages = async () => {
-                const response = await axios.get(`/api/groups/${selectedGroup._id}/conversations`);
-                setMessages(response.data);
-            };
-            fetchGroupMessages();
-        }
-    }, [selectedGroup]);
-
     return (
-        <div className={`chat-mainpage ${darkMode ? 'dark-mode' : ''}`}>
+        <div className={`chat-mainpage ${darkMode ? 'dark-mode' : ''}`}> {/* Fixed class name */}
             <ChatSideMenu onNewChat={handleNewChatSession} onChatSelect={handleChatSelect} />
             <div className="first-main-div">
                 <div className="left-div">
@@ -286,7 +291,7 @@ function ChatMainPage({ selectedGroup }) {
             <div className="chat-container" ref={chatContainerRef}>
                 {messages && messages.length > 0 ? (
                     messages.map((msg, index) => (
-                        <div key={index} className={`message ${msg.role}`}>
+                        <div key={index} className={`message ${msg.role}`}> {/* Fixed class name */}
                             <div className={`message-icon ${msg.role === 'user' ? 'user-icon' : ''}`}>
                                 {msg.role === 'user' && (
                                     <img src="/static/images/user.png" alt={msg.role} className="user-icon-img" />
@@ -316,7 +321,6 @@ function ChatMainPage({ selectedGroup }) {
                                                 <span className="copy-text" onClick={() => handleCopy(index)}>Copy</span> // Show "Copy" when not copied
                                             )}
                                         </div>
-
                                     </div>
                                 )}
                             </div>

@@ -1,10 +1,11 @@
 // ChatSideMenu.js
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import ChatHistory from './ChatHistory';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios'; // Import axios for making API calls
 import Cookies from 'js-cookie'; // Import Cookies for getting username from cookies
+import { useDrop } from 'react-dnd';
 
 function ChatSideMenu({ onNewChat, onChatSelect }) {
     const [isMenuVisible, setMenuVisible] = useState(false);
@@ -12,19 +13,23 @@ function ChatSideMenu({ onNewChat, onChatSelect }) {
     const [groups, setGroups] = useState([]); // New state for groups
     const [dropdownOpen, setDropdownOpen] = useState(false); // State to manage dropdown visibility
     const userName = Cookies.get('userName'); // Get the username from cookies
+    const [chats, setChats] = useState([]); // State for chat history
 
-    // Fetch groups from the database when the component mounts
+    // Fetch groups and chats from the database when the component mounts
     useEffect(() => {
-        const fetchGroups = async () => {
+        const fetchGroupsAndChats = async () => {
             try {
-                const response = await axios.get(`http://localhost:2000/groups/${userName}`);
-                setGroups(response.data); // Set the groups state with the fetched data
+                const groupsResponse = await axios.get(`http://localhost:2000/groups/${userName}`);
+                setGroups(groupsResponse.data);
+
+                const chatsResponse = await axios.get(`http://localhost:2000/chats/${userName}`);
+                setChats(chatsResponse.data); // Set the chats state with the fetched data
             } catch (error) {
-                console.error("Error fetching groups:", error);
+                console.error("Error fetching data:", error);
             }
         };
 
-        fetchGroups();
+        fetchGroupsAndChats();
     }, [userName]); // Dependency array includes userName to refetch if it changes
 
     const hiddenVisibleToggle = () => {
@@ -103,39 +108,46 @@ function ChatSideMenu({ onNewChat, onChatSelect }) {
         }
     };
 
-    // Function to handle drag start
-    const handleDragStart = (chatId) => {
-        // Store the chat ID in the dataTransfer object
-        window.draggedChatId = chatId;
-    };
-
-    // Function to handle drag over
-    const handleDragOver = (event) => {
-        event.preventDefault(); // Prevent default to allow drop
-    };
-
-    // Function to handle drop
-    const handleDrop = async (groupId) => {
-        const chatId = window.draggedChatId; // Get the dragged chat ID
-        if (chatId) {
-            try {
-                // Example API call to update the chat's group
-                await axios.put(`http://localhost:2000/chats/${chatId}/group/${groupId}`);
-                console.log(`Chat ${chatId} moved to group ${groupId}`);
-
-                // Update local state to reflect the moved chat
-                setGroups(prevGroups => 
-                    prevGroups.map(group => {
-                        if (group._id === groupId) {
-                            return { ...group, chats: [...(group.chats || []), chatId] }; // Add chatId to the group
-                        }
-                        return { ...group, chats: group.chats.filter(id => id !== chatId) }; // Remove chatId from other groups
-                    })
-                );
-            } catch (error) {
-                console.error("Error moving chat to group:", error);
-            }
+    const handleDropToGroup = async (groupId, chatId) => {
+        try {
+            const username = Cookies.get('userName');
+            await axios.post(`http://localhost:2000/groups/${groupId}/add-chat`, {
+                chatId: chatId,
+                username: username
+            });
+            
+            // Refresh groups after successful drop
+            const groupsResponse = await axios.get(`http://localhost:2000/groups/${username}`);
+            setGroups(groupsResponse.data);
+        } catch (error) {
+            console.error("Error adding chat to group:", error);
         }
+    };
+
+    const GroupItem = ({ group }) => {
+        const [{ isOver }, drop] = useDrop({
+            accept: 'CHAT',
+            drop: (item) => handleDropToGroup(group._id, item.id),
+            collect: (monitor) => ({
+                isOver: monitor.isOver()
+            })
+        });
+
+        return (
+            <li 
+                ref={drop}
+                key={group._id} 
+                style={{ 
+                    padding: '5px', 
+                    margin: '5px 0',
+                    backgroundColor: isOver ? 'rgba(0, 255, 0, 0.1)' : 'transparent'
+                }}
+            >
+                {group.name}
+                <button onClick={() => renameGroup(group._id)}>Rename</button>
+                <button onClick={() => deleteGroup(group._id)}>Delete</button>
+            </li>
+        );
     };
 
     return (
@@ -158,32 +170,17 @@ function ChatSideMenu({ onNewChat, onChatSelect }) {
                     <div className="groupContainer">
                         <button className="group_new_chat_button" onClick={() => setDropdownOpen(!dropdownOpen)}>
                             Groups
-                            <img src="/static/images/drop.png" alt="dropdown" style={{ width: '15px', marginLeft: '5px' }} />
+                            <img src="/static/images/dropdrop.png" alt="dropdown" style={{ width: '25px', marginLeft: '5px' }} />
                         </button>
                         {dropdownOpen && (
                             <ul className="groupDropdown">
                                 {groups.map(group => (
-                                    <li 
-                                        key={group._id} 
-                                        onDragOver={handleDragOver} 
-                                        onDrop={() => handleDrop(group._id)} // Handle drop event
-                                        style={{ padding: '5px', margin: '5px 0' }} // Optional styling
-                                    >
-                                        {group.name}
-                                        <button onClick={() => renameGroup(group._id)}>Rename</button>
-                                        <button onClick={() => deleteGroup(group._id)}>Delete</button>
-                                        {/* Display chats in the group */}
-                                        <ul>
-                                            {group.chats && group.chats.map(chatId => (
-                                                <li key={chatId}>{chatId}</li> // Replace with actual chat details
-                                            ))}
-                                        </ul>
-                                    </li>
+                                    <GroupItem key={group._id} group={group} />
                                 ))}
                             </ul>
                         )}
                     </div>
-                    <ChatHistory onChatSelect={onChatSelect} groups={groups} />
+                    <ChatHistory onChatSelect={onChatSelect} groups={groups} chats={chats} setChats={setChats} />
                 </div>
             </div>
         </>
