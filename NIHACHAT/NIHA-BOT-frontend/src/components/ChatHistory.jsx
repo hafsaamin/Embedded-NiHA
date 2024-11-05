@@ -51,10 +51,9 @@ function ChatHistory({ onChatSelect }) {
                     <p>No chat history available.</p>
                 ) : (
                     <ul className="chatList">
-                        
                         {chats.map((chat, index) => {
-                            const userMessage = chat.messages.find(msg => msg.role === 'user')?.content || "No Title";
-                            const botResponse = chat.messages.find(msg => msg.role === 'assistant')?.content || "";
+                            const chatTitle = chat.title || "Untitled Chat";
+                            const botResponse = chat.messages?.find(msg => msg.role === 'assistant')?.content || "";
 
                             return (
                                 <li key={chat._id} className="list">
@@ -67,7 +66,7 @@ function ChatHistory({ onChatSelect }) {
                                             }}
                                             style={{ cursor: 'pointer' }}
                                         >
-                                            {userMessage}
+                                            {chatTitle}
                                         </span>
                                         <img 
                                             src="/static/images/delete.png" 

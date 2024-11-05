@@ -26,6 +26,26 @@ conversation_collection = db['conversations']
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Update the title generation function (remove async)
+def generate_chat_title(messages):
+    try:
+        title_prompt = {
+            "role": "system",
+            "content": "Based on the following conversation, generate a short, concise title (max 6 words) that captures the main topic or theme of the discussion."
+        }
+        
+        response = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=[title_prompt] + messages,
+            max_tokens=10,
+            temperature=0.7
+        )
+        
+        return response.choices[0].message['content'].strip()
+    except Exception as e:
+        logger.error(f"Error generating title: {str(e)}")
+        return "Untitled Chat"
+
 @app.route('/chat/<username>', methods=['POST'])
 def chat(username):
     data = request.json
@@ -55,11 +75,15 @@ def chat(username):
 
             # Save the conversation after generating the full response
             if not conversation_id:
+                # Generate title from the conversation
+                chat_title = generate_chat_title(messages + [{'role': 'assistant', 'content': bot_response}])
+                
                 conversation = {
                     'created_at': datetime.now(),
                     'updated_at': datetime.now(),
                     'messages': messages + [{'role': 'assistant', 'content': bot_response}],
-                    'username': username
+                    'username': username,
+                    'title': chat_title  # Add the generated title
                 }
                 result = conversation_collection.insert_one(conversation)
                 conversation_id = str(result.inserted_id)
