@@ -18,6 +18,7 @@ function ChatMainPage() {
     const chatContainerRef = useRef(null);
     const [error, setError] = useState(null);
     const [copiedIndex, setCopiedIndex] = useState(null);
+    
 
     const handleInputChange = (e) => {
         setUserInput(e.target.value);
@@ -55,7 +56,7 @@ function ChatMainPage() {
 
             const reader = response.body.getReader();
 
-            const assistantMessageIndex = messages.length;
+            const assistantMessageIndex = (messages.length+1);
             setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: '' }]);
 
             while (true) {
@@ -85,6 +86,7 @@ function ChatMainPage() {
                                     };
                                     return updatedMessages;
                                 });
+                                console.log(messages);
                             } else if (parsedData.conversation_id) {
                                 setCurrentConversationId(parsedData.conversation_id);
                                 console.log("Conversation saved with ID:", parsedData.conversation_id);

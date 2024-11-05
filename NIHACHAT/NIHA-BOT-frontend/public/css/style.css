@@ -87,22 +87,32 @@ body.dark-mode{
 
 .chatContainer
 {
- margin-right: 10px;
+  margin-right: 10px;
+  padding-left: 10px;
+  padding-bottom: 15px;
+ 
 }
 
 /* ------------------SideMenu  */
 .chat-sidemenu {
   position: fixed;
-  width: 271px;
+  /* width: 271px; */
   height: 100vh;
-  overflow: hidden;
+  
+  overflow-y: auto;
   padding-top: 30px;
   left: 0;
   background-color: rgb(115, 90, 90);
   transition: all 1s;
   z-index: 200;
   opacity: 0.9;
+
 }
+
+.chat-sidemenu-content{
+  padding-bottom: 17px;
+}
+
 
 .chat-sidemenu.dark-mode{
   background-color: rgb(89 85 85);
@@ -114,6 +124,8 @@ body.dark-mode{
 
 .chat-sidemenu-content {
   width: 271px;
+
+
 }
 
 
@@ -121,6 +133,7 @@ body.dark-mode{
   display: flex;
   justify-content: space-around;
   align-items: center;
+
 }
 
 .sidemenu-toggle-btn {
@@ -154,12 +167,38 @@ body.dark-mode{
   height: 44px;
   background-color: #e2dfdf;
   color: rgb(171, 15, 106);
-  font-size: large;
   font-weight: 600;
   margin-top: 35px;
   border-radius: 11px;
+  margin-right: 10px;
+  margin-left: 8px;
 }
-
+.group_new_chat_button {
+  border-color: #fff;
+  border: 1px solid white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 124px;
+  height: 44px;
+  font-size: 15px;
+  background-color: #e2dfdf;
+  color: rgb(171, 15, 106);
+  font-weight: 600;
+  margin-top: 15px;
+  border-radius: 11px;
+  margin-right: 10px;
+  margin-left: 66px;
+}
+.drop-icon
+{
+  width: 50px;
+  height: auto;
+}
+.group_new_chat_button.dark-mode{
+  background-color: #3c3a3a;
+  color: white;
+}
 .new_chat_button.dark-mode{
   background-color: #3c3a3a;
   color: white;
@@ -180,7 +219,7 @@ body.dark-mode{
 }
 
 .list {
-  width: 254px;
+  width: 238px;
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -191,7 +230,8 @@ body.dark-mode{
   background-color: #fff5f5;
   color: black;
   font-size: 14px;
-  opacity: 1;
+  opacity:1;
+
  
 }
 .message-content
@@ -211,7 +251,7 @@ body.dark-mode{
   font-weight: bold;
   color: #de8df9;
   margin-top: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
  
 }
 .chat-title.dark-mode{
@@ -1197,12 +1237,118 @@ p {
   cursor: pointer;
 }
 
+.groupContainer h2{
+  font-size: 18px;
+  padding-left: 15px;
+  font-weight: bold;
+  color: #de8df9;
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+.groupContainer h2.dark-mode{
+ 
+  color: #ffffff;
+
+}
 
 
+.groupContainer .drop-down
 
-/* -------------------------------------AMina pagal k liyeee */
+{
+  margin-left: 10px;
+  margin-bottom: 5px;
+}
+.groupDropdown {
+  position: absolute; /* Position dropdown absolutely */
+  z-index: 10; /* Ensure dropdown is above other content */
+  background-color: white; /* Set background to avoid transparency issues */
+  border: 1px solid #ccc; /* Optional: add border for visibility */
+  width: 100%; /* Match width of the button */
+  list-style-type: none; /* Remove default list styling */
+  padding: 10px; /* Add some padding */
+  margin: 0; /* Remove default margin */
+  background-color: #ffffff; /* Light background color for the dropdown */
+  border: 1px solid #ccc; /* Light border around the dropdown */
+  border-radius: 5px; /* Rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  position: absolute; /* Position it absolutely */
+  z-index: 1000; /* Ensure it appears above other elements */
+  width: 200px; /* Set a fixed width */
+  color: black; /* Default text color */
+  margin-bottom: 10px;
+}
 
-.Amina{
-  background-color: red;
-  
+.groupDropdown li {
+  padding: 10px; /* Padding for each list item */
+  display: flex; /* Use flexbox for alignment */
+  justify-content: space-between; /* Space between text and buttons */
+  align-items: center; /* Center items vertically */
+  transition: background-color 0.3s; /* Smooth background transition */
+  color: rgb(0, 0, 0); /* Default text color for list items */
+}
+
+.groupDropdown button {
+  background-color: #de8df9; /* Button background color */
+  color: rgb(0, 0, 0); /* Button text color */
+  border: none; /* Remove border */
+  border-radius: 5px; /* Rounded corners for buttons */
+  padding: 5px 10px; /* Padding for buttons */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s; /* Smooth background transition */
+  margin-left: 10px;
+}
+
+.groupDropdown button:hover {
+  background-color: #c77bd7; /* Darker shade on hover */
+}
+
+/* Dark mode styles for group dropdown */
+.groupDropdown.dark-mode {
+  background-color: #3c3a3a; /* Dark background for dropdown */
+  border: 1px solid #555; /* Darker border */
+}
+
+.groupDropdown li.dark-mode {
+  color: rgb(255, 255, 255); /* White text for list items */
+}
+
+
+.groupDropdown button.dark-mode {
+  background-color: #5a5656; /* Darker button background in dark mode */
+  color: white; /* White text for buttons in dark mode */
+}
+
+.groupDropdown button.dark-mode:hover {
+  background-color: #777; /* Darker shade on hover in dark mode */
+}
+
+/* Dark mode styles for buttons */
+.new_chat_button.dark-mode,
+.group_new_chat_button.dark-mode {
+  background-color: #3c3a3a; /* Dark background */
+  color: white; /* White text */
+  border: 1px solid #fff; /* White border */
+}
+
+.new_chat_button.dark-mode:hover,
+.group_new_chat_button.dark-mode:hover {
+  background-color: #5a5656; /* Darker shade on hover */
+}
+
+.groupContainer {
+    position: relative; /* Ensure dropdown is positioned relative to this container */
+}
+
+.groupDropdown {
+    position: absolute; /* Position dropdown absolutely */
+    top: 100%; /* Position it below the button */
+    left: 0; /* Align it to the left */
+    z-index: 1000; /* Ensure it appears above other elements */
+    /* Add any additional styles you need for the dropdown */
+}
+
+.chatHistoryContainer {
+    max-height: calc(100vh - 200px); /* Adjust height as needed */
+    overflow-y: auto; /* Enable scrolling if content overflows */
+    transition: margin-top 0.3s; /* Smooth transition for margin changes */
 }
