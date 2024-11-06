@@ -13,6 +13,7 @@ function ChatSideMenu({ onNewChat, onChatSelect }) {
     const [dropdownOpen, setDropdownOpen] = useState(false); // State to manage dropdown visibility
     const userName = Cookies.get('userName'); // Get the username from cookies
     const [chats, setChats] = useState([]); // State for chat history
+    const [draggedChatId, setDraggedChatId] = useState(null);
 
     // Fetch groups and chats from the database when the component mounts
     useEffect(() => {
@@ -105,6 +106,43 @@ function ChatSideMenu({ onNewChat, onChatSelect }) {
                 console.error("Error deleting group:", error);
             }
         }
+    };
+
+    const handleDragStart = (chatId) => {
+        setDraggedChatId(chatId);
+    };
+
+    const handleDragOver = (e, groupId) => {
+        e.preventDefault();
+    };
+
+    const handleDrop = async (e, groupId) => {
+        e.preventDefault();
+        if (!draggedChatId) return;
+
+        try {
+            await axios.post(`http://localhost:2000/groups/${groupId}/conversations`, {
+                conversation_id: draggedChatId
+            });
+            
+            // Update local state
+            setChats(prevChats => prevChats.filter(chat => chat._id !== draggedChatId));
+            setGroups(prevGroups => {
+                return prevGroups.map(group => {
+                    if (group._id === groupId) {
+                        return {
+                            ...group,
+                            chats: [...group.chats, draggedChatId]
+                        };
+                    }
+                    return group;
+                });
+            });
+        } catch (error) {
+            console.error("Error moving chat to group:", error);
+        }
+        
+        setDraggedChatId(null);
     };
 
     return (

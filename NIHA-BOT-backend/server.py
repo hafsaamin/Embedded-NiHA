@@ -9,6 +9,7 @@ import traceback
 import logging
 import os
 import speech_recognition as sr  # Add this import for speech recognition
+import base64
 
 app = Flask(__name__)
 CORS(app, origins=['http://localhost:3000'])  # Adjust the origin as needed
@@ -308,6 +309,45 @@ def delete_group(username, group_id):
     except Exception as e:
         logger.error(f"Error deleting group {group_id}: {str(e)}")
         return jsonify({'error': 'Failed to delete group'}), 500
+
+@app.route('/process-image', methods=['POST'])
+def process_image():
+    try:
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image file provided'}), 400
+
+        image_file = request.files['image']
+        if image_file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+
+        # Read the image file and encode it in base64
+        image_data = base64.b64encode(image_file.read()).decode('utf-8')
+
+        # Call GPT-4 Vision API
+        response = openai.ChatCompletion.create(
+            model="gpt-4-vision-preview",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "What's in this image? Please extract any text if present."},
+                        {
+                            "type": "image_url",
+                            "image_url": f"data:image/jpeg;base64,{image_data}"
+                        }
+                    ]
+                }
+            ],
+            max_tokens=300
+        )
+
+        return jsonify({
+            'description': response.choices[0].message['content']
+        })
+
+    except Exception as e:
+        logger.error(f"Error processing image: {str(e)}")
+        return jsonify({'error': 'Failed to process image'}), 500
 
 if __name__ == '__main__':
     app.run(port=2000, debug=True)

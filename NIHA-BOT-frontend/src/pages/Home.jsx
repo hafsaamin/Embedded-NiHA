@@ -15,7 +15,7 @@ function Home() {
           </ul>
         </nav>
         <div className="home-page-hero-content">
-          <h2>Meet Generative Niha</h2>
+          <h2 style={{ marginTop: '120px' }}>Meet Generative Niha</h2>
           <p>Your AI companion for seamless human-robot interaction. Powered by GPT-based semantic processing.</p>
           <button className="home-page-cta-button"><a className='home-page-cta-a' href='login-signup'>Try the Chatbot</a></button>
           

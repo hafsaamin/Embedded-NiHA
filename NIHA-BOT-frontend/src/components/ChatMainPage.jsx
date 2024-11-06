@@ -229,6 +229,62 @@ function ChatMainPage() {
         }
     };
 
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setLoading(true);
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                // First, process the image
+                const processResponse = await fetch('http://localhost:2000/process-image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!processResponse.ok) {
+                    throw new Error('Failed to process image');
+                }
+
+                const result = await processResponse.json();
+                
+                // Add the image and its description to the chat
+                const imageMessage = {
+                    role: 'user',
+                    content: `<img src="${URL.createObjectURL(file)}" alt="Uploaded Image" style="max-width: 300px;" />`
+                };
+                
+                const descriptionMessage = {
+                    role: 'assistant',
+                    content: result.description
+                };
+
+                setMessages(prev => [...prev, imageMessage, descriptionMessage]);
+                
+                // Save the conversation if needed
+                if (currentConversationId) {
+                    await fetch(`http://localhost:2000/chat/${userName}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            conversation_id: currentConversationId,
+                            messages: [...messages, imageMessage, descriptionMessage]
+                        })
+                    });
+                }
+            } catch (error) {
+                console.error('Error processing image:', error);
+                setError('Failed to process image. Please try again.');
+            } finally {
+                setLoading(false);
+                scrollToBottom();
+            }
+        }
+    };
+
     return (
         <div className={`chat-mainpage ${darkMode ? 'dark-mode' : ''}`}>
             <ChatSideMenu onNewChat={handleNewChatSession} onChatSelect={handleChatSelect} />
@@ -256,18 +312,23 @@ function ChatMainPage() {
                             <img src="/static/images/ai.png" alt="icon" className="ai-icon-1" style={{ width: '45px' }} />
                         </a>
                     </div>
-                    <div className="flex-row">
-                        <div className="col-4">
-                            <img src="/static/images/application.png" alt="task-1" className="center-img" />
-                            <p className="tasks">Describing the contents <br /> of an image</p>
+                    <div className="features-container">
+                        <div className="feature-block">
+                            <div className="feature-icon">🤖</div>
+                            <h3>Smart Conversations</h3>
+                            <p>Engage in natural conversations with our AI-powered chatbot that understands context and provides relevant responses.</p>
                         </div>
-                        <div className="col-4">
-                            <img src="/static/images/network.png" alt="task-2" className="center-img" />
-                            <p className="tasks">Turning your data into <br /> graphs</p>
+                        
+                        <div className="feature-block">
+                            <div className="feature-icon">📚</div>
+                            <h3>Knowledge Base</h3>
+                            <p>Access a vast knowledge base covering various topics and get accurate information instantly.</p>
                         </div>
-                        <div className="col-4">
-                            <img src="/static/images/table.png" alt="task-3" className="center-img" />
-                            <p className="tasks">Turning your data into <br /> tables</p>
+                        
+                        <div className="feature-block">
+                            <div className="feature-icon">⚡</div>
+                            <h3>Quick Responses</h3>
+                            <p>Get instant answers to your questions with our fast and efficient response system.</p>
                         </div>
                     </div>
                 </div>
@@ -325,8 +386,6 @@ function ChatMainPage() {
                 <div className="third-main-div">
                     <div className="message-tab">
                         <div className="icons-left">
-                            <img src="/static/images/attach.png" alt="attach file" className="icon-1" onClick={() => document.getElementById('fileInput').click()} />
-                            <input type="file" id="fileInput" accept="image/*" style={{ display: 'none' }} onChange={handleFileUpload} />
                             <img src="/static/images/mic.png" alt="voice input" className="icon-2" onClick={handleVoiceInput} />
                         </div>
                         <input type="text" className="message-input my-input" placeholder="Message NIHA" value={userInput} onChange={handleInputChange} disabled={loading} />
@@ -338,6 +397,7 @@ function ChatMainPage() {
                     </div>
                 </div>
             </form>
+           
         </div>
     );
 }

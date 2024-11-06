@@ -375,13 +375,16 @@ body.dark-mode{
 /* -----------------------------response-options */
 .flex-row {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: stretch;
+  flex-wrap: nowrap;
   margin: 45px 0;
+  width: 100%;
+  gap: 20px;
 }
 
 .col-4 {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -395,6 +398,7 @@ body.dark-mode{
   margin: 20px;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  max-width: calc(33.33% - 40px);
 }
 
 .col-4.dark-mode{
@@ -848,6 +852,7 @@ body.dark-mode{
 .home-page-features-section {
   padding: 100px;
   background-color: #f7f7f7;
+  
  
 
 }
@@ -874,6 +879,7 @@ body.dark-mode{
   text-align: left;
   margin-top:30px;
   margin-bottom:30px;
+  gap: 20px;
 
 }
 
@@ -1259,96 +1265,196 @@ p {
   margin-bottom: 5px;
 }
 .groupDropdown {
-  position: absolute; /* Position dropdown absolutely */
-  z-index: 10; /* Ensure dropdown is above other content */
-  background-color: white; /* Set background to avoid transparency issues */
-  border: 1px solid #ccc; /* Optional: add border for visibility */
-  width: 100%; /* Match width of the button */
-  list-style-type: none; /* Remove default list styling */
-  padding: 10px; /* Add some padding */
-  margin: 0; /* Remove default margin */
-  background-color: #ffffff; /* Light background color for the dropdown */
-  border: 1px solid #ccc; /* Light border around the dropdown */
-  border-radius: 5px; /* Rounded corners */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-  position: absolute; /* Position it absolutely */
-  z-index: 1000; /* Ensure it appears above other elements */
-  width: 200px; /* Set a fixed width */
-  color: black; /* Default text color */
+  position: absolute; 
+  z-index: 10; 
+  background-color: white; 
+  border: 1px solid #ccc; 
+  width: 100%; 
+  list-style-type: none;
+  padding: 10px; 
+  margin: 0; 
+  background-color: #ffffff; 
+  border: 1px solid #ccc; 
+  border-radius: 5px; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
+  position: absolute; 
+  z-index: 1000; 
+  width: 200px; 
+  color: black; 
   margin-bottom: 10px;
 }
 
 .groupDropdown li {
-  padding: 10px; /* Padding for each list item */
-  display: flex; /* Use flexbox for alignment */
-  justify-content: space-between; /* Space between text and buttons */
-  align-items: center; /* Center items vertically */
-  transition: background-color 0.3s; /* Smooth background transition */
-  color: rgb(0, 0, 0); /* Default text color for list items */
+  padding: 10px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  transition: background-color 0.3s; 
+  color: rgb(0, 0, 0); 
 }
 
 .groupDropdown button {
-  background-color: #de8df9; /* Button background color */
-  color: rgb(0, 0, 0); /* Button text color */
-  border: none; /* Remove border */
-  border-radius: 5px; /* Rounded corners for buttons */
-  padding: 5px 10px; /* Padding for buttons */
-  cursor: pointer; /* Pointer cursor on hover */
-  transition: background-color 0.3s; /* Smooth background transition */
+  background-color: #de8df9; 
+  color: rgb(0, 0, 0);
+  border: none; 
+  border-radius: 5px; 
+  padding: 5px 10px;
+  cursor: pointer; 
+  transition: background-color 0.3s; 
   margin-left: 10px;
 }
 
 .groupDropdown button:hover {
-  background-color: #c77bd7; /* Darker shade on hover */
+  background-color: #c77bd7; 
 }
 
-/* Dark mode styles for group dropdown */
 .groupDropdown.dark-mode {
-  background-color: #3c3a3a; /* Dark background for dropdown */
-  border: 1px solid #555; /* Darker border */
+  background-color: #3c3a3a; 
+  border: 1px solid #555; 
 }
 
 .groupDropdown li.dark-mode {
-  color: rgb(255, 255, 255); /* White text for list items */
+  color: rgb(255, 255, 255); 
 }
 
 
 .groupDropdown button.dark-mode {
-  background-color: #5a5656; /* Darker button background in dark mode */
-  color: white; /* White text for buttons in dark mode */
+  background-color: #5a5656; 
+  color: white; 
 }
 
 .groupDropdown button.dark-mode:hover {
-  background-color: #777; /* Darker shade on hover in dark mode */
+  background-color: #777; 
 }
 
-/* Dark mode styles for buttons */
 .new_chat_button.dark-mode,
 .group_new_chat_button.dark-mode {
-  background-color: #3c3a3a; /* Dark background */
-  color: white; /* White text */
-  border: 1px solid #fff; /* White border */
+  background-color: #3c3a3a; 
+  color: white; 
+  border: 1px solid #fff; 
 }
 
 .new_chat_button.dark-mode:hover,
 .group_new_chat_button.dark-mode:hover {
-  background-color: #5a5656; /* Darker shade on hover */
+  background-color: #5a5656; 
 }
 
 .groupContainer {
-    position: relative; /* Ensure dropdown is positioned relative to this container */
-}
+    position: relative; }
+
 
 .groupDropdown {
-    position: absolute; /* Position dropdown absolutely */
-    top: 100%; /* Position it below the button */
-    left: 0; /* Align it to the left */
-    z-index: 1000; /* Ensure it appears above other elements */
-    /* Add any additional styles you need for the dropdown */
+    position: absolute; 
+    top: 100%; 
+    left: 0; 
+    z-index: 1000; 
 }
 
 .chatHistoryContainer {
-    max-height: calc(100vh - 200px); /* Adjust height as needed */
-    overflow-y: auto; /* Enable scrolling if content overflows */
-    transition: margin-top 0.3s; /* Smooth transition for margin changes */
+    max-height: calc(100vh - 200px); 
+    overflow-y: auto; 
+    transition: margin-top 0.3s; 
+}
+
+.feature-icon {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: rgb(80, 4, 23);
+}
+
+.feature-icon.dark-mode {
+    color: white;
+}
+
+@media (max-width: 900px) {
+  .flex-row {
+    flex-direction: row;  
+    flex-wrap: wrap;      
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .col-4 {
+    flex: 0 1 calc(33.33% - 30px);  
+    padding: 20px;
+    margin: 10px;
+  }
+}
+
+@media (max-width: 700px) {
+  .flex-row {
+    flex-direction: column;  
+  }
+
+  .col-4 {
+    flex: 1;
+    width: 100%;
+    max-width: none;
+  }
+}
+.feature-container
+{
+  padding: 100px;
+}
+
+.list {
+    cursor: move;
+    transition: background-color 0.3s ease;
+}
+
+.list:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.list.dragging {
+    opacity: 0.5;
+}
+
+.group-drop-zone {
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    margin: 10px 0;
+    padding: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.group-drop-zone.drag-over {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-color: #666;
+}
+
+.context-menu {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    padding: 5px 0;
+}
+
+.context-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.context-menu li {
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+.context-menu li:hover {
+    background-color: #f5f5f5;
+}
+
+.dark-mode .context-menu {
+    background: #3c3a3a;
+    border-color: #555;
+}
+
+.dark-mode .context-menu li {
+    color: white;
+}
+
+.dark-mode .context-menu li:hover {
+    background-color: #4a4a4a;
 }

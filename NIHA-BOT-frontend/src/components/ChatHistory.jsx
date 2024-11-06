@@ -51,10 +51,9 @@ function ChatHistory({ onChatSelect }) {
                     <p>No chat history available.</p>
                 ) : (
                     <ul className="chatList">
-                        
                         {chats.map((chat, index) => {
                             const chatTitle = chat.title || "Untitled Chat";
-                            const botResponse = chat.messages.find(msg => msg.role === 'assistant')?.content || "";
+                            const botResponse = chat.messages?.find(msg => msg.role === 'assistant')?.content || "";
 
                             return (
                                 <li key={chat._id} className="list">
