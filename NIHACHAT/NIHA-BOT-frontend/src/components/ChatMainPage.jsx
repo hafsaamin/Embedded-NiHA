@@ -18,7 +18,7 @@ function ChatMainPage() {
     const chatContainerRef = useRef(null);
     const [error, setError] = useState(null);
     const [copiedIndex, setCopiedIndex] = useState(null);
-    
+
 
     const handleInputChange = (e) => {
         setUserInput(e.target.value);
@@ -56,7 +56,7 @@ function ChatMainPage() {
 
             const reader = response.body.getReader();
 
-            const assistantMessageIndex = (messages.length+1);
+            const assistantMessageIndex = (messages.length + 1);
             setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: '' }]);
 
             while (true) {
@@ -256,20 +256,26 @@ function ChatMainPage() {
                             <img src="/static/images/ai.png" alt="icon" className="ai-icon-1" style={{ width: '45px' }} />
                         </a>
                     </div>
-                    <div className="flex-row">
-                        <div className="col-4">
-                            <img src="/static/images/application.png" alt="task-1" className="center-img" />
-                            <p className="tasks">Describing the contents <br /> of an image</p>
+                    <div className="features-container">
+                        <div className="feature-block">
+                            <div className="feature-icon">🤖</div>
+                            <h3>Smart Conversations</h3>
+                            <p>Engage in natural conversations with our AI-powered chatbot that understands context and provides relevant responses.</p>
                         </div>
-                        <div className="col-4">
-                            <img src="/static/images/network.png" alt="task-2" className="center-img" />
-                            <p className="tasks">Turning your data into <br /> graphs</p>
+
+                        <div className="feature-block">
+                            <div className="feature-icon">📚</div>
+                            <h3>Knowledge Base</h3>
+                            <p>Access a vast knowledge base covering various topics and get accurate information instantly.</p>
                         </div>
-                        <div className="col-4">
-                            <img src="/static/images/table.png" alt="task-3" className="center-img" />
-                            <p className="tasks">Turning your data into <br /> tables</p>
+
+                        <div className="feature-block">
+                            <div className="feature-icon">⚡</div>
+                            <h3>Quick Responses</h3>
+                            <p>Get instant answers to your questions with our fast and efficient response system.</p>
                         </div>
                     </div>
+                   
                 </div>
             )}
 
