@@ -54,6 +54,8 @@ function ChatMainPage() {
                 }),
             });
 
+            debugger;
+
             const reader = response.body.getReader();
 
             const assistantMessageIndex = (messages.length + 1);
@@ -77,6 +79,7 @@ function ChatMainPage() {
                             if (parsedData.error) {
                                 throw new Error(parsedData.error);
                             }
+                            
                             if (parsedData.content) {
                                 setMessages((prevMessages) => {
                                     const updatedMessages = [...prevMessages];

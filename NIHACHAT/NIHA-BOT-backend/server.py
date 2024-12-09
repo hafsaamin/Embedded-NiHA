@@ -9,13 +9,82 @@ import traceback
 import logging
 import os
 import speech_recognition as sr  # Add this import for speech recognition
+import pinecone
+from pinecone import ServerlessSpec
+import pandas as pd
+import logging
+logging.basicConfig(level=logging.INFO)
+
 
 app = Flask(__name__)
 CORS(app, origins=['http://localhost:3000'])  # Adjust the origin as needed
 
+# Create a Pinecone instance
+pc = pinecone.Pinecone(
+    api_key=''  # Replace with your actual Pinecone API key
+)
+
+
+
+# Check if the index exists; create it if it doesn't
+if 'test-index' not in pc.list_indexes().names():
+    pc.create_index(
+        name='test-index',  # Replace with your index name
+        dimension=1536,  # Replace with your embedding dimension size
+        metric='cosine',  # Replace with your chosen metric (e.g., 'euclidean', 'cosine')
+        spec=ServerlessSpec(
+            cloud='aws',  # Replace with your cloud provider (e.g., 'gcp', 'aws')
+            region='us-east-1'  # Replace with your environment/region
+        )
+    )
+
+
+# Define the index globally
+index = pc.Index('test-index')
+
 # Set your OpenAI API key
-OPENAI_API_KEY=""
+OPENAI_API_KEY = " "
 openai.api_key = OPENAI_API_KEY  # Set the API key for OpenAI
+
+#  Load CSV file
+csv_file_path = r" "  # enter your csv file path here 
+df = pd.read_csv(csv_file_path)
+
+# def generate_and_upsert_embeddings(csv_file_path):
+#     df = pd.read_csv(csv_file_path)
+    
+#     for i, row in df.iterrows():
+#         text = row['product_name']  # Assuming 'product_name' column contains the text
+        
+#         try:
+#             # Generate the embedding using OpenAI's API
+#             embedding_response = openai.Embedding.create(
+#                 model='text-embedding-ada-002',  # Using the 'text-embedding-ada-002' model
+#                 input=text
+#             )
+#             embedding = embedding_response['data'][0]['embedding']
+            
+#             # Prepare a unique ID (e.g., using the index or product name)
+#             embedding_id = f'product-{i}'  # Or use 'row["product_name"]' if you prefer to use product name as ID
+#              # Prepare metadata by including all columns in the row as metadata
+#             metadata = row.to_dict()  # Convert the entire row to a dictionary (each column becomes a key in metadata)
+#              # Handle NaN values in metadata: replace them with an empty string or a placeholder like "unknown"
+#             metadata = {key: (value if not pd.isna(value) else "unknown") for key, value in metadata.items()}
+            
+            
+
+#             # Upsert the embedding into Pinecone index
+#             index.upsert([(embedding_id, embedding, metadata)])  # Upsert a single vector
+#             logging.info(f"Generated embedding for row {i} and upserted to Pinecone.")
+
+#         except Exception as e:
+#             logging.error(f"Error generating or upserting embedding for row {i}: {str(e)}")
+
+
+
+
+
+
 
 # MongoDB connection
 mongo_client = MongoClient("mongodb://localhost:27017/")
@@ -63,7 +132,7 @@ def chat(username):
                 model='gpt-3.5-turbo',
                 messages=messages,
                 stream=True
-            )
+            )  
 
             bot_response = ''
             for chunk in response:
@@ -73,17 +142,54 @@ def chat(username):
                         bot_response += content
                         yield f"data: {json.dumps({'content': content})}\n\n"
 
+            # Generate embedding for the user input (the last message)
+            try:
+                user_input_text = messages[-1]['content']  # Assuming the last message is user input
+                embedding_response = openai.Embedding.create(
+                    model='text-embedding-ada-002',
+                    input=user_input_text
+                )
+                embedding = embedding_response['data'][0]['embedding']
+
+                # Step 2: Perform the similarity search in Pinecone using the generated embedding
+                search_results = index.query(
+                    vector=embedding,  # The user query embedding
+                    top_k=5,  # Number of results you want to fetch
+                    include_metadata=True  # Optionally include metadata in the results
+                )
+
+                # Step 3: Extract the top result from the search results
+                print(f"Search results: {search_results}")
+                if search_results['matches']:
+                   top_match = search_results['matches'][0]
+                   product_metadata = top_match['metadata']
+                   product_name = product_metadata.get('product_name', 'No product name')
+                   product_price = product_metadata.get('discounted_price', 'No price available')
+                   product_description = product_metadata.get('description', 'No description available')
+                   product_url = product_metadata.get('product_url', 'No URL available')
+    
+                # Formulating a bot response
+                   bot_response = f"Here is a relevant product I found:\n\n" \
+                   f"**{product_name}**\n" \
+                   f"Price: {product_price}\n" \
+                   f"Description: {product_description}\n" \
+                   f"Find more details [here]({product_url})."
+                else:
+                   bot_response = "Sorry, I couldn't find any relevant products based on your query."
+
+            except Exception as e:
+                logger.error(f"Error generating or querying embeddings: {str(e)}")
+                bot_response = "Sorry, there was an error processing your request."
+
             # Save the conversation after generating the full response
             if not conversation_id:
-                # Generate title from the conversation
                 chat_title = generate_chat_title(messages + [{'role': 'assistant', 'content': bot_response}])
-                
                 conversation = {
                     'created_at': datetime.now(),
                     'updated_at': datetime.now(),
                     'messages': messages + [{'role': 'assistant', 'content': bot_response}],
                     'username': username,
-                    'title': chat_title  # Add the generated title
+                    'title': chat_title
                 }
                 result = conversation_collection.insert_one(conversation)
                 conversation_id = str(result.inserted_id)
@@ -310,4 +416,10 @@ def delete_group(username, group_id):
         return jsonify({'error': 'Failed to delete group'}), 500
 
 if __name__ == '__main__':
+   
+    
+    # generate_and_upsert_embeddings(csv_file_path)
     app.run(port=2000, debug=True)
+
+
+   
